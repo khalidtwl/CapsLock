@@ -22,6 +22,12 @@ object
 
 end
 
+class LinearProgram =
+object(self)
+type 'a Vector = 'a list (* Might model after stacks *)
+
+end
+
 (* Dummy classes *)
 (* Will have a constructor and objects of these classes are to be passed into
     the methods above*)
