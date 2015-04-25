@@ -4,8 +4,6 @@ open Matrix
 type 'a Vector = 'a array
 type linProg = ('a Vector * matrix)
 
-type matrix = (int * int) * (elt array array)
-
 (* First parameter is our input, second is the current matrix.
   To use this function, pass in an empty matrix as the second argument *)
 
