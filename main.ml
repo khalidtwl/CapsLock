@@ -1,8 +1,8 @@
 open Core.Std
 open Matrix
 
-type 'a Vector = 'a array
-type linProg = ('a Vector * matrix)
+type 'a vector = 'a array
+type linProg = 'a vector * matrix
 
 (* First parameter is our input, second is the current matrix.
   To use this function, pass in an empty matrix as the second argument *)
@@ -16,7 +16,7 @@ let rec io ( ((n,p),m) : matrix ) : linProg =
 
 (* Returns a matrix without the top row.
   Ex: removeTopRow m (empty (n-1) p) 2 *)
-let rec removeTopRow ( (n,p),m) : matrix ) (newM : matrix) (counter : int) :
+let rec removeTopRow ( ((n,p),m) : matrix ) (newM : matrix) (counter : int) :
   matrix =
   if counter <= n then (
     set_row newM counter (match (get_row ((n,p),m) counter) with
