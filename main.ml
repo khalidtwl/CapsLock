@@ -62,9 +62,11 @@ let () = Printf.printf "\nNow lets see what IO outputs\n\n"
 let () = match (io a) with
         | (vect, mat) -> printArray vect; EltMatrix.print mat
 let dumbArray = Array.make 3 4
+
 let b = EltMatrix.from_string "0,1,2|\n3,4,5"
 let () = match (io b) with
         | (vect, mat) -> printArray vect; EltMatrix.print mat*)
+
 
 (* prep : LinearProgram -> Cinput*)
 let prep (prog : linProg) =
