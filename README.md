@@ -22,3 +22,6 @@ User Input
 Black Box
 What to do with Vector
 Someone to do geometric search
+
+TO RUN
+Type make with the directory open to compile the code. Then run the program by typing in ./simplex
