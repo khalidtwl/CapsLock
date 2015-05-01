@@ -37,6 +37,9 @@ sig
   (* Prints a system. ie, the Matrix and the Basic, Non Basic sets *)
   val print_system : system -> unit
 
+  (* Takes in a point and converts it to a list of floats *)
+  val point_to_list : point -> float list
+
   (* Runs the tests *)
   val run_tests : int -> unit
 
@@ -95,12 +98,12 @@ struct
     stringing p "(" 
 
   (* Converts a point to list format *)
-  let point_to_list (p: point) : elt list =
-    let rec listing (p1: point) : elt list =
+  let point_to_list (p: point) : 'a list =
+    let rec listing (p1: point) : 'a list =
       match p1 with
       | Empty -> []
       | Point (e,p2) -> 
-          e::(listing p2)
+          (float_of_string (Elts.to_string e))::(listing p2)
     in
     listing p
 

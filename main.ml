@@ -66,33 +66,47 @@ let b = EltMatrix.from_string "0,1,2|\n3,4,5"
 let () = match (io b) with
         | (vect, mat) -> printArray vect; EltMatrix.print mat*)
 
-(*
 (* prep : LinearProgram -> Cinput*)
 let prep (prog : linProg) =
 ()
 
+(* Prints a solution *)
+let print_solution (e,p) : unit =
+  let _ = print_string "Solved!\n\nOptimal value: " in
+  let _ = Elts.print e in
+  let _ = print_string "\n\nAchieved at the point: " in
+  let _ = Simplex.print_point p in
+  print_string "\n\n"
+
 (* simplex : Cinput -> float vector*)
-let solve_simplex (lp : linProg) : float vector =
+let solve_simplex (lp : linProg) : float vector option=
   let (a, b) = lp in
   let neg_one = Elts.subtract Elts.zero Elts.one in
   let obj_lst = neg_one::(Array.to_list a) in
   (* Maybe you meant to use EltMatrix.map here instead? *)
-  let cons_lsts = List.map (fun x -> Elts.zero::x) b in
+  let b_lst = 
+    let (_, height) = EltMatrix.get_dimensions b in
+    let rec extracted n lst: 'a list list =
+      if n >= height then lst
+      else
+        let n' = n + 1 in
+        let (_, row) = EltMatrix.get_row b n' in
+          extracted n' (Array.to_list row::lst) in
+    List.rev (extracted 0 []) in
+  let cons_lsts = List.map (fun x -> Elts.zero::x) b_lst in
 
-  (try
-    (match Simplex.initialize_simplex obj_lst::cons_lsts with
-      | None -> (print_string "\nThis system has no feasable solution.\n"); None
-      | Some sys ->
-        let _ = print_string "\nSolving your system....\n\n" in
-        match Simplex.solve sys with
-        | None -> (print_string "This system is unbounded.
-          You can increase/decrease it as you please!\n"); None
-        | Some solution -> print_solution solution);
-          let (e,p) = solution in
-            Some (Simplex.point_to_list p)
-    with
-      | Sys_error e -> usage e)
-
+  match Simplex.load_matrix (EltMatrix.from_list (obj_lst::cons_lsts)) with
+    | None -> (print_string 
+        "\nThis system has no feasable solution.\n"); None
+    | Some sys ->
+      let _ = print_string "\nSolving your system....\n\n" in
+      match Simplex.solve sys with
+      | None -> (print_string "This system is unbounded.
+        You can increase/decrease it as you please!\n"); None
+      | Some solution -> print_solution solution;
+        (let (e,p) = solution in
+          Some (Array.of_list (Simplex.point_to_list p)))
+(*
 (* unprep : Coutput -> float vector*)
 let unprep : float vector =
 ()
