@@ -1,3 +1,6 @@
+open Elts
+open MatrixI
+open SimplexI
 open Core.Std
 open Matrix
 
@@ -29,9 +32,26 @@ let rec removeTopRow ( ((n,p),m) : matrix ) (newM : matrix) (counter : int) :
 let prep (prog : linProg) =
 ()
 
-(* simplex : Cinput -> Coutput*)
-let simplex =
-()
+(* simplex : Cinput -> float vector*)
+let solve_simplex (lp : linProg) : float vector =
+  let (a, b) = lp in
+  let neg_one = Elts.subtract Elts.zero Elts.one in
+  let obj_lst = neg_one::a in
+  let cons_lsts = List.map (fun x -> Elts.zero::x) b in
+
+  (try 
+    (match Simplex.initialize_simplex obj_lst::cons_lsts with
+      | None -> (print_string "\nThis system has no feasable solution.\n"); None
+      | Some sys -> 
+        let _ = print_string "\nSolving your system....\n\n" in
+        match Simplex.solve sys with
+        | None -> (print_string "This system is unbounded. 
+          You can increase/decrease it as you please!\n"); None
+        | Some solution -> print_solution solution);
+          let (e,p) = solution in
+            Some (Simplex.point_to_list p)
+    with
+      | Sys_error e -> usage e) 
 
 (* unprep : Coutput -> float vector*)
 let unprep : float vector =
