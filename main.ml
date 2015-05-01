@@ -31,6 +31,10 @@ let rec io ( matx : EltMatrix.matrix ) : linProg =
              removeTopRow matx (EltMatrix.empty (n-1) p) 2)
   )
 
+let a = EltMatrix.empty 3 3
+let () = EltMatrix.print a
+
+(*
 (* prep : LinearProgram -> Cinput*)
 let prep (prog : linProg) =
 ()
@@ -40,6 +44,7 @@ let solve_simplex (lp : linProg) : float vector =
   let (a, b) = lp in
   let neg_one = Elts.subtract Elts.zero Elts.one in
   let obj_lst = neg_one::(Array.to_list a) in
+  (* Maybe you meant to use EltMatrix.map here instead? *)
   let cons_lsts = List.map (fun x -> Elts.zero::x) b in
 
   (try
@@ -67,3 +72,4 @@ let branch_and_bound (vec : float vector) : linProg =
 (* geo_search : float vector -> LinearProgram -> int vector*)
 let geo_search (vec : float vector) (prog : linProg) : int vector =
 ()
+*)
