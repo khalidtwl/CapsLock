@@ -34,41 +34,6 @@ let rec io ( matx : EltMatrix.matrix ) : linProg =
 let rec printArray (arr : 'a array) : unit =
   Array.iter (fun x -> (Elts.print x)) arr
 
-(*let file ="matrix0.txt"
-let lines = ref [] in
-let ic = open_in file in
-try
-  while true; do
-    lines := input_line ic :: !lines
-  done; []
-with End_of_file ->
-  close_in ic;
-  List.rev !lines
-  try
-      let line = input_line ic; input_line ic in  (* read line from in_channel and discard \n *)
-      print_endline line;          (* write the result to stdout *)
-      flush stdout;                (* write on the underlying device now *)
-      close_in ic                  (* close the input channel *)
-
-    with e ->                      (* some unexpected exception occurs *)
-      close_in_noerr ic;           (* emergency closing *)
-      raise e*)
-
-
-(*let a = EltMatrix.empty 3 3
-let () = Printf.printf "Input:\n"
-let () = EltMatrix.print a
-let () = Printf.printf "\nNow lets see what IO outputs\n\n"
-let () = match (io a) with
-        | (vect, mat) -> printArray vect; EltMatrix.print mat
-let dumbArray = Array.make 3 4
-
-let b = EltMatrix.from_string "0,1,2|\n3,4,5"
-let () = match (io b) with
-        | (vect, mat) -> printArray vect; EltMatrix.print mat*)
-let sampleMatrix = EltMatrix.from_string "5,4,3,0|2,3,1,5|4,1,2,11|3,4,2,8"
-let () = match (io sampleMatrix) with
-        | (vect, mat) -> printArray vect; EltMatrix.print mat
 
 (* Prints a solution *)
 let print_solution (e,p) : unit =
@@ -84,7 +49,7 @@ let solve_simplex (lp : linProg) : float vector option =
   let obj_lst = neg_one::(Array.to_list a) in
   (* Maybe you meant to use EltMatrix.map here instead? *)
   let b_lst =
-    let (_, height) = EltMatrix.get_dimensions b in
+    let (height, _) = EltMatrix.get_dimensions b in
     let rec extracted n lst: 'a list list =
       if n >= height then lst
       else
@@ -117,5 +82,13 @@ let solve (mat: EltMatrix.matrix): unit =
     |None -> Printf.printf "No Solution Found"
     |Some solution -> Printf.printf "Solution found:  "; printArray (Array.map int_to_elt solution)
 
-let lp = io sampleMatrix
-let _ = solve_simplex lp
+let sampleMatrix = EltMatrix.from_string "5,4,3,0|2,3,1,5|4,1,2,11|3,4,2,8"
+let sample2 = EltMatrix.from_string "5,4,3,0|2,3,1,5|-2,-3,-1,-6|3,4,2,8"
+
+let () = match (io sample2) with
+          | (vect, mat) -> printArray vect; EltMatrix.print mat
+
+let () = solve sample2
+
+(*let lp = io sample2
+let _ = solve_simplex lp*)

@@ -4,7 +4,6 @@ open GeoSearch
 open Elts
 open MatrixI
 open SimplexI
-(*open Core.Std*)
 open Matrix
 
 
@@ -19,6 +18,9 @@ let branch_direction_priority_list (approx: float vector): (int*int) list =
 
 let fix_vect (i: int) (vect: 'a vector): 'a vector =
   Array.append (Array.sub vect 0 i) (Array.sub vect (i+1) (Array.length vect));;
+
+let unfix_vect (i: int) (v: 'a) (vect: 'a vector): 'a vector =
+  Array.concat [(Array.sub vect 0 i); [|v|]; (Array.sub vect i (Array.length vect))];;
 
 let int_to_elt (i: int): EltMatrix.elt =
   Elts.from_string (Num.string_of_num (Num.num_of_int i))
@@ -50,7 +52,7 @@ let rec branch_and_bound_call (approx_sol: float vector) (lp: linProg) (fixes_li
   |None -> match fixes_list with
     |[] -> None
     |(i,v)::tl -> match branch_and_bound_call (fix_vect i approx_sol) (fix i v lp) tl with
-      |Some sol -> Some sol
+      |Some sol -> Some (unfix_vect i v sol)
       |None -> match branch_and_bound_call approx_sol lp tl with
 	|Some sol -> Some sol
 	|None -> None;;
