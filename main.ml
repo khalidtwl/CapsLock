@@ -1,32 +1,35 @@
-(*open Elts*)
-(*open MatrixI*)
-(*open SimplexI*)
-open Core.Std
+open Elts
+open MatrixI
+open SimplexI
+(*open Core.Std*)
 open Matrix
 
 type 'a vector = 'a array
-type linProg = 'a vector * EltMatrix.matrix
+type linProg = EltMatrix.elt vector * EltMatrix.matrix
+
+(* Returns a matrix without the top row.
+  Ex: removeTopRow m (empty (n-1) p) 2 *)
+let rec removeTopRow (oldM : EltMatrix.matrix ) (newM : EltMatrix.matrix)
+  (counter : int) : EltMatrix.matrix =
+  let n = (match (EltMatrix.get_dimensions oldM) with
+          | (rows, _) -> rows) in
+  (if counter <= n then (
+    EltMatrix.set_row newM counter
+    (match (EltMatrix.get_row oldM counter) with
+      | (_, a) -> a );
+    removeTopRow oldM newM (counter+1) )
+  else
+    newM)
 
 (* First parameter is our input, second is the current matrix.
   To use this function, pass in an empty matrix as the second argument *)
 
-let rec io ( ((n,p),m) : matrix ) : linProg =
+let rec io ( matx : EltMatrix.matrix ) : linProg =
   (
-    (match (get_row ((n,p),m) 1) with
+    (match (EltMatrix.get_row matx 1) with
     | (_, array) -> array),
-    (removeTopRow ((n,p),m) (empty (n-1) p) 2)
+    (removeTopRow (matx (empty (n-1) p) 2)
   )
-
-(* Returns a matrix without the top row.
-  Ex: removeTopRow m (empty (n-1) p) 2 *)
-let rec removeTopRow ( ((n,p),m) : matrix ) (newM : matrix) (counter : int) :
-  matrix =
-  if counter <= n then (
-    set_row newM counter (match (get_row ((n,p),m) counter) with
-                 | (_, a) -> a) ;
-    removeTopRow ((n,p),m) (counter+1) )
-  else
-    newM
 
 (* prep : LinearProgram -> Cinput*)
 let prep (prog : linProg) =

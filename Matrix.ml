@@ -2,12 +2,12 @@ open Order
 open Elts
 
 (* Functor so we can Abstract away! *)
-module MakeMatrix (C: EltsI.ORDERED_AND_OPERATIONAL) : 
+module MakeMatrix (C: EltsI.ORDERED_AND_OPERATIONAL) :
   (MatrixI.MATRIX with type elt = C.t) =
 struct
 
   (*************** Exceptions ***************)
-  
+
   exception NonSquare
   exception ImproperDimensions1
   exception ImproperDimensions2
@@ -22,25 +22,25 @@ struct
   exception ImproperDimensions11
   exception ImproperDimensions12
   exception ImproperDimensions13
-  exception ImproperDimensions14 
+  exception ImproperDimensions14
 
   (*************** End Exceptions ***************)
-  
+
   (*************** Types ***************)
 
   type elt = C.t
-  
+
   (* A matrix is a pair of dimension (n x p) and a array of arrays
    * the first array is the row (n) and the second the column (p) *)
-  type matrix = (int * int) * (elt array array) 
+  type matrix = (int * int) * (elt array array)
 
   (*************** End Types ***************)
 
   (*************** Base Functions ***************)
 
-  (* catching negative dimensions AND 0 dimensions and too large 
+  (* catching negative dimensions AND 0 dimensions and too large
    * of a dimension so we don't have to worry about it later *)
-  let empty (rows: int) (columns: int) : matrix = 
+  let empty (rows: int) (columns: int) : matrix =
     if rows > 0 && columns > 0 then
       try
         let m = Array.make_matrix rows columns C.zero in ((rows,columns),m)
@@ -55,22 +55,22 @@ struct
 
   (* get's the nth row of a matrix and returns (r, row) where r is the length
    * of the row and row is a COPY of the original row. For example, calling
-   * calling get_row m 1 will return (3, |1 3 4 |) 
+   * calling get_row m 1 will return (3, |1 3 4 |)
    *         ________
-   *    m = | 1 3 4 | 
-   *        |*2 5 6 | 
+   *    m = | 1 3 4 |
+   *        |*2 5 6 |
    *)
   (* aside: we don't check whether n < 1 because of our matrix invariant *)
   let get_row (((n,p),m): matrix) (row: int) : int * elt array =
-    if row <= n then 
+    if row <= n then
       let row' = Array.map (fun x -> x) m.(row - 1) in
       (p, row')
-    else 
+    else
       raise (Failure "Row out of bounds.")
 
   (* similar to get_row. For m, get_column m 1 will return (2, |1 2|) *)
   let get_column (((n,p),m): matrix) (column: int) : int * elt array =
-    if column <= p then 
+    if column <= p then
       begin
         let column' = Array.make n C.zero in
         for i = 0 to n - 1 do
@@ -81,12 +81,12 @@ struct
     else
       raise (Failure "Column out of bounds.")
 
-  (* sets the nth row of the matrix m to the specified array a. 
+  (* sets the nth row of the matrix m to the specified array a.
    * This is done IN-PLACE. Therefore the function returns unit.  You should
    * nonetheless enfore immutability whenever possible.  For a clarification on
    * what nth row means, look at comment for get_row above. *)
   let set_row (((n,p),m): matrix) (row: int) (a: elt array) : unit =
-    if row <= n then 
+    if row <= n then
     begin
       assert(Array.length a = p);
       for i = 0 to p - 1 do
@@ -103,7 +103,7 @@ struct
       assert(Array.length a = n);
       for i = 0 to n - 1 do
         m.(i).(column - 1) <- a.(i)
-      done; 
+      done;
     end
     else
       raise (Failure "Column out of bounds.")
@@ -112,21 +112,21 @@ struct
   let get_elt (((n,p),m): matrix) ((i,j): int*int) : elt =
     if i <= n && j <= p then
       m.(i - 1).(j - 1)
-    else 
+    else
       raise ImproperDimensions3
 
   (* Changes the i,j-th element of a matrix to e. Is not zero-indexed, and
    * changes the matrix in place *)
   let set_elt (((n,p),m): matrix) ((i,j): int*int) (e: elt) : unit =
     if i <= n && j <= p then
-      m.(i - 1).(j - 1) <- e 
-    else 
+      m.(i - 1).(j - 1) <- e
+    else
       raise ImproperDimensions4
 
-  (* similar to map, but applies to function to the entire matrix 
+  (* similar to map, but applies to function to the entire matrix
    * Returns a new matrix *)
   let map (f: elt -> elt) (mat: matrix) : matrix =
-    let (dim,m) = mat in 
+    let (dim,m) = mat in
     (dim, Array.map (Array.map f) m)
 
   (* Just some wrapping of Array.iter made for Matrices! *)
@@ -138,7 +138,7 @@ struct
    * printing matrix. The index is (i,j). NOT zero-indexed *)
   let iteri (f: int -> int -> elt -> unit) (mat: matrix) : unit =
     let dim,m = mat in
-    Array.iteri (fun i row -> Array.iteri (fun j e -> f (i+1) (j+1) e) row) m 
+    Array.iteri (fun i row -> Array.iteri (fun j e -> f (i+1) (j+1) e) row) m
 
   (* folds over each row using base case u and function f *)
   (* could be a bit more efficient? *)
@@ -146,7 +146,7 @@ struct
     let total = ref u in
       for i = 0 to p - 1 do
         for j = 0 to q - 1 do
-          total := f (!total) m.(i).(j) 
+          total := f (!total) m.(i).(j)
         done;
       done;
     !total
@@ -158,14 +158,14 @@ struct
    * other array is also out of bounds, then it returns their value.
    * Otherwise, the arrays were the wrong size and raises ImproperDimension
 
-    THE ABOVE COMMENT HAS NOT BEEN IMPLEMENTED 
+    THE ABOVE COMMENT HAS NOT BEEN IMPLEMENTED
 
     Instead we calculate the length before starting
    *)
   let dot (v1: elt array) (v2: elt array) : elt =
     let rec dotting (i: int) (total: elt) : elt =
       if i = 0 then total
-      else 
+      else
         let curr = C.multiply v1.(i-1) v2.(i-1) in
         dotting (i - 1) (C.add curr total) in
     let len1, len2 = Array.length v1, Array.length v2 in
@@ -175,24 +175,24 @@ struct
   (* function to expose the dimensions of a matrix *)
   let get_dimensions (m: matrix) : (int * int) =
     let ((x,y),m') = m in (x,y)
-    
+
   (*************** End Helper Functions ***************)
 
 
   (*************** Primary Matrix Functions ***************)
-      
+
   (* scales a matrix by the appropriate factor *)
   let scale (m: matrix) (sc: elt) : matrix = map (C.multiply sc) m
 
   (* Generates a matrix from a list of lists. The inners lists are the rows *)
-  let from_list (lsts : elt list list) : matrix = 
+  let from_list (lsts : elt list list) : matrix =
     let rec check_length (length: int) (lst: elt list) : int =
       if List.length lst = length then length
-      else raise ImproperDimensions6 in 
+      else raise ImproperDimensions6 in
     let p = List.length lsts in
     match lsts with
     | [] -> raise ImproperDimensions7
-    | hd::tl -> 
+    | hd::tl ->
       let len = List.length hd in
       if List.fold_left check_length len tl = len then
         ((p,len),Array.map Array.of_list (Array.of_list lsts))
@@ -212,17 +212,17 @@ struct
       (dim',sum_m)
     else
       raise ImproperDimensions9
-  
+
 
   (* Multiplies two matrices. If the matrices have dimensions m x n and p x q, n
    * and p must be equal, and the resulting matrix will have dimension n x q *)
-  let mult (matrix1: matrix) (matrix2: matrix) : matrix =  
+  let mult (matrix1: matrix) (matrix2: matrix) : matrix =
     let ((m,n),m1), ((p,q),m2) = matrix1, matrix2 in
     if n = p then
       let (dim, result) = empty m q in
       for i = 0 to m - 1 do
         for j = 0 to q - 1 do
-          let (_,row), (_,column) = get_row matrix1 (i + 1), 
+          let (_,row), (_,column) = get_row matrix1 (i + 1),
             get_column matrix2 (j + 1) in
           result.(i).(j) <- dot row column
         done;
@@ -239,7 +239,7 @@ struct
     let empty (i: int option) (e: elt) : int option =
       match i, C.compare e C.zero with
       | None, Equal -> (index := !index + 1; None)
-      | None, _ -> Some (!index) 
+      | None, _ -> Some (!index)
       | _, _ -> i in
     Array.fold_left empty None arr
 
@@ -253,10 +253,10 @@ struct
         let (_,col) = get_column m j in
         match zero col with
         | None -> check_col to_skip (j + 1)
-        | Some i -> 
-          if to_skip = 0 then 
+        | Some i ->
+          if to_skip = 0 then
             Some (i,j)
-          else (* we want a later column *) 
+          else (* we want a later column *)
             check_col (to_skip - 1) (j + 1)
       else None in
     check_col (n - 1) 1
@@ -272,7 +272,7 @@ struct
         let (_,col) = get_column m j in
         match zero col with
         | None -> check_col (j + 1)
-        | Some i -> 
+        | Some i ->
           match C.compare col.(i-1) C.one with
           | Equal -> check_col (j + 1)
           | _ -> Some (i,j)
@@ -281,30 +281,30 @@ struct
 
   (* Compares two elements in an elt array and returns the greater and its
    * index. Is a helper function for find_max_col_index *)
-  let compare_helper (e1: elt) (e2: elt) (ind1: int) (ind2: int) : (elt*int) = 
-    match C.compare e1 e2 with 
+  let compare_helper (e1: elt) (e2: elt) (ind1: int) (ind2: int) : (elt*int) =
+    match C.compare e1 e2 with
     | Equal -> (e2, ind2)
     | Greater -> (e1, ind1)
-    | Less -> (e2, ind2) 
+    | Less -> (e2, ind2)
 
-  (* Finds the element with the greatest absolute value in a column. Is not 
+  (* Finds the element with the greatest absolute value in a column. Is not
    * 0-indexed. If two elements are both the maximum value, returns the one with
    * the lowest index. Returns None if this element is zero (if column is all 0)
    *)
-  let find_max_col_index (array1: elt array) (start_index: int) : int option = 
-    let rec find_index (max_index: int) (curr_max: elt) (curr_index: int) 
-        (arr: elt array) = 
-      if curr_index = Array.length arr then 
+  let find_max_col_index (array1: elt array) (start_index: int) : int option =
+    let rec find_index (max_index: int) (curr_max: elt) (curr_index: int)
+        (arr: elt array) =
+      if curr_index = Array.length arr then
         (if curr_max = C.zero then None
         else Some (max_index+1)) (* Arrays are 0-indexed but matrices aren't *)
       else
         (match C.compare arr.(curr_index) C.zero with
         | Equal -> find_index max_index curr_max (curr_index+1) arr
-        | Greater -> 
-          (let (el, index) = compare_helper (arr.(curr_index)) 
+        | Greater ->
+          (let (el, index) = compare_helper (arr.(curr_index))
             curr_max curr_index max_index in
           find_index index el (curr_index+1) arr)
-        | Less -> 
+        | Less ->
           (let abs_curr_elt = C.subtract C.zero arr.(curr_index) in
           let (el, index) = compare_helper abs_curr_elt curr_max curr_index
             max_index in
@@ -314,8 +314,8 @@ struct
 
   (* Basic row operations *)
   (* Scales a row by sc *)
-  let scale_row (m: matrix) (num: int) (sc: elt) : unit = 
-    let (len, row) = get_row m num in 
+  let scale_row (m: matrix) (num: int) (sc: elt) : unit =
+    let (len, row) = get_row m num in
     let new_row = Array.map (C.multiply sc) row in
     set_row m num new_row
 
@@ -323,34 +323,34 @@ struct
   let swap_row (m: matrix) (r1: int) (r2: int) : unit =
     let (len1, row1) = get_row m r1 in
     let (len2, row2) = get_row m r2 in
-    let _ = assert (len1 = len2) in 
-    let _ = set_row m r1 row2 in 
+    let _ = assert (len1 = len2) in
+    let _ = set_row m r1 row2 in
     let _ = set_row m r2 row1 in
     ()
 
   (* Subtracts a multiple of r2 from r1 *)
-  let sub_mult (m: matrix) (r1: int) (r2: int) (sc: elt) : unit = 
+  let sub_mult (m: matrix) (r1: int) (r2: int) (sc: elt) : unit =
     let (len1, row1) = get_row m r1 in
     let (len2, row2) = get_row m r2 in
     let _ = assert (len1 = len2) in
     for i = 0 to len1 - 1 do (* Arrays are 0-indexed *)
       row1.(i) <- C.subtract row1.(i) (C.multiply sc row2.(i))
     done;
-    set_row m r1 row1 
+    set_row m r1 row1
 
   (*************** End Helper Functions for Row Reduce ***************)
 
   (* Returns the row reduced form of a matrix. Is not done in place, but creates
    * a new matrix *)
   let row_reduce (mat: matrix) : matrix =
-    let rec row_reduce_h (n_row: int) (n_col: int) (mat2: matrix) : unit = 
+    let rec row_reduce_h (n_row: int) (n_col: int) (mat2: matrix) : unit =
       let ((num_row, num_col), arr) = mat2 in
       if (n_col = num_row + 1) then ()
       else
         let (_,col) = get_column mat2 n_col in
         match find_max_col_index col n_row with
-        | None (* Column all 0s *) -> row_reduce_h n_row (n_col+1) mat2 
-        | Some index -> 
+        | None (* Column all 0s *) -> row_reduce_h n_row (n_col+1) mat2
+        | Some index ->
           begin
             swap_row mat2 index n_row;
             let pivot = get_elt mat2 (n_row, n_col) in
@@ -388,7 +388,7 @@ struct
   (*************** End Main Functions ***************)
 
   (************** Input and Output Functions **********)
-  let rec read_data (chan: in_channel) : elt list list =  
+  let rec read_data (chan: in_channel) : elt list list =
     try
       let row = input_line chan in
       let chars = Helpers.explode row "," in
@@ -403,7 +403,7 @@ struct
       let matrix = from_list m_list in
       close_in chan; matrix
     with
-    | e -> raise e 
+    | e -> raise e
 
   let write_data (((row,col),m): matrix) : string =
     let buffer = ref "" in
@@ -411,21 +411,21 @@ struct
       buffer := !buffer ^ C.to_string e;
       if j = col then
         buffer := !buffer ^ "\n"
-      else 
-        buffer := !buffer ^ "," 
+      else
+        buffer := !buffer ^ ","
       in
     iteri to_string ((row,col),m);
     !buffer
 
   (* Dumps the matrix to a file with filename name *)
   let dump (name: string) (m: matrix) : unit =
-    try 
+    try
       let outchan = open_out name in
       let s = write_data m in
       output_string outchan s;
       close_out outchan
     with
-      | Sys_error e -> print_string e 
+      | Sys_error e -> print_string e
 
 
 
@@ -440,7 +440,7 @@ struct
       else
         elt in
     if n = p then build C.zero (n - 1)
-    else raise ImproperDimensions11 
+    else raise ImproperDimensions11
 
   (* calculates the transpose of a matrix and retuns a new one *)
   let transpose (((n,p),m): matrix) =
@@ -493,7 +493,7 @@ struct
 
   (***************** HELPER FUNCTIONS FOR DETERMINANT *****************)
   (* creates an identity matrix of size n*)
-  let create_identity (n:int) : matrix = 
+  let create_identity (n:int) : matrix =
     let (dim,m) = empty n n in
     for i = 0 to n - 1 do
       m.(i).(i) <- C.one
@@ -502,7 +502,7 @@ struct
 
   (* Finds the index of the maximum value of an array *)
   let find_max_index (arr: elt array) (start_index : int) : int =
-    let rec find_index (max_index: int) (curr_index: int) = 
+    let rec find_index (max_index: int) (curr_index: int) =
       if curr_index = Array.length arr then max_index+1
       else
         match C.compare arr.(curr_index) arr.(max_index) with
@@ -510,7 +510,7 @@ struct
         | Greater -> find_index curr_index (curr_index + 1) in
     find_index (start_index - 1) start_index
 
-  (* Creates the pivoting matrix for A. Returns swqps. Adapted from 
+  (* Creates the pivoting matrix for A. Returns swqps. Adapted from
    * http://rosettacode.org/wiki/LU_decomposition#Common_Lisp *)
   let pivotize (((n,p),m): matrix) : matrix * int =
     if n = p then
@@ -519,15 +519,15 @@ struct
       for j = 1 to n do
         let (_,col) = get_column ((n,p),m) j in
         let max_index = find_max_index col j in
-        if max_index <> j then 
+        if max_index <> j then
           (swaps := !swaps + 1; swap_row pivot_mat max_index j)
         else ()
-      done; 
+      done;
       (pivot_mat,!swaps)
     else raise ImproperDimensions12
 
-  (* decomposes a matrix into a lower triangualar, upper triangualar 
-   * and a pivot matrix. It returns (L,U,P). Adapted from 
+  (* decomposes a matrix into a lower triangualar, upper triangualar
+   * and a pivot matrix. It returns (L,U,P). Adapted from
    * http://rosettacode.org/wiki/LU_decomposition#Common_Lisp *)
   let lu_decomposition (((n,p),m): matrix) : (matrix*matrix*matrix)*int =
     if n = p then
@@ -554,22 +554,22 @@ struct
         done;
       done;
       (lower,upper,pivot),s
-    else raise ImproperDimensions13 
+    else raise ImproperDimensions13
 
   (* Computes the determinant of a matrix *)
   let determinant (m: matrix) : elt =
-    try 
+    try
       let ((n,p),m') = m in
-      if n = p then 
+      if n = p then
         let rec triangualar_det (a,mat) curr_index acc =
           if curr_index < n then
             let acc' = C.multiply mat.(curr_index).(curr_index) acc in
-            triangualar_det (a,mat) (curr_index + 1) acc' 
+            triangualar_det (a,mat) (curr_index + 1) acc'
           else acc in
         let ((dim1,l),(dim2,u),(dim3,p)),s = lu_decomposition m in
-        let det1, det2 = triangualar_det (dim1,l) 0 C.one, 
+        let det1, det2 = triangualar_det (dim1,l) 0 C.one,
           triangualar_det (dim2,u) 0 C.one in
-        if s mod 2 = 0 then C.multiply det1 det2 
+        if s mod 2 = 0 then C.multiply det1 det2
         else C.subtract C.zero (C.multiply det1 det2)
       else raise ImproperDimensions14
     with
@@ -587,11 +587,11 @@ struct
     let mat = empty x y in
     for i = 1 to x-1 do
       for j = 1 to y do
-        set_elt mat (i,j) (C.generate_random (float (x + y)) ()) 
+        set_elt mat (i,j) (C.generate_random (float (x + y)) ())
       done;
     done;
     let (_,row) = get_row mat 1 in
-    let _ = set_row mat x row in 
+    let _ = set_row mat x row in
     mat
 
   let rec test_empty (times: int) : unit =
@@ -628,14 +628,14 @@ struct
         test_from_0 (index + 1) (C.add n C.one) ((x',y'),m') in
     let dimx, dimy = Random.int times + 1, Random.int times + 1 in
     let m = empty dimx dimy in
-    test_from_0 0 C.zero m 
+    test_from_0 0 C.zero m
 
 
   let rec test_get_row (times: int): unit =
     if times = 0 then ()
     else
       let dimx, dimy = Random.int times + 1, Random.int times + 1 in
-      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ()) 
+      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ())
         (empty dimx dimy) in
       for i = 1 to dimx do
         let (dim,row) = get_row (extra, t_mat) i in
@@ -652,7 +652,7 @@ struct
     if times = 0 then ()
     else
       let dimx, dimy = Random.int times + 1, Random.int times + 1 in
-      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ()) 
+      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ())
         (empty dimx dimy) in
       for j = 1 to dimy do
         let (dim,column) = get_column (extra, t_mat) j in
@@ -669,7 +669,7 @@ struct
     if times = 0 then ()
     else
       let dimx, dimy = Random.int times + 1, Random.int times + 1 in
-      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ()) 
+      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ())
         (empty dimx dimy) in
       for i = 1 to dimx do
         for j = 1 to dimy do
@@ -685,7 +685,7 @@ struct
     if times = 0 then ()
     else
       let dimx, dimy = Random.int times + 1, Random.int times + 1 in
-      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ()) 
+      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ())
         (empty dimx dimy) in
       let rand_array = Array.map (fun _ -> C.generate_random (float times) ())
         (Array.make dimy C.one) in
@@ -704,7 +704,7 @@ struct
     if times = 0 then ()
     else
       let dimx, dimy = Random.int times + 1, Random.int times + 1 in
-      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ()) 
+      let (extra,t_mat) = map (fun _ -> C.generate_random (float times) ())
         (empty dimx dimy) in
       let rand_array = Array.map (fun _ -> C.generate_random (float times) ())
         (Array.make dimx C.one) in
@@ -731,7 +731,7 @@ struct
   let rec test_mult (times: int) : unit =
     if times = 0 then ()
     else
-      let dimx = Random.int times + 1 in 
+      let dimx = Random.int times + 1 in
       let identity = create_identity dimx in
       let t_mat = map (fun x -> C.generate_random (float times) ())
         (empty dimx dimx) in
@@ -745,10 +745,10 @@ struct
 
   let rec test_add (times: int) : unit =
     if times = 0 then ()
-    else 
-      let dimx= Random.int times + 1 in 
+    else
+      let dimx= Random.int times + 1 in
       let identity = create_identity dimx  in
-      let t_mat = map (fun x -> C.generate_random (float times) ()) 
+      let t_mat = map (fun x -> C.generate_random (float times) ())
         (empty dimx dimx)  in
       let result = add identity t_mat in
       for i = 1 to dimx do
@@ -761,10 +761,10 @@ struct
 
   let rec test_scale (times: int) : unit =
     if times = 0 then ()
-    else 
-      let dimx,dimy = Random.int times + 1, Random.int times + 1 in 
+    else
+      let dimx,dimy = Random.int times + 1, Random.int times + 1 in
       let scalar = C.generate_random (float times) () in
-      let t_mat = map (fun x -> C.generate_random (float times) ()) 
+      let t_mat = map (fun x -> C.generate_random (float times) ())
         (empty dimx dimy)  in
       let result = scale t_mat scalar in
       for i = 1 to dimx do
@@ -779,21 +779,21 @@ struct
     let independent = gen_non_independent dimx dimx in
     let identity = create_identity dimx in
     let reduced = row_reduce independent in
-    try 
+    try
       assert (not(reduced = identity))
     with Assert_failure _ -> (print independent;print reduced;print identity)
 
   let rec test_determinamnt (times: int) : unit =
     let dimx = Random.int times + 2 in
-    let independent = gen_non_independent dimx dimx in 
+    let independent = gen_non_independent dimx dimx in
     let det = determinant independent in
     assert(det = C.zero)
-      
+
 
 
   (*************** End Test Functions ***************)
 
-  let run_tests times = 
+  let run_tests times =
     test_empty times;
     test_map times;
     test_get_row times;
@@ -801,7 +801,7 @@ struct
     test_get_elt times;
     test_set_row times;
     test_set_column times;
-    test_reduce times; 
+    test_reduce times;
     test_add times;
     test_mult times;
     test_scale times;
