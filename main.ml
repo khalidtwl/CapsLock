@@ -23,12 +23,12 @@ let rec removeTopRow (oldM : EltMatrix.matrix ) (newM : EltMatrix.matrix)
 
 (* First parameter is our input, second is the current matrix.
   To use this function, pass in an empty matrix as the second argument *)
-
 let rec io ( matx : EltMatrix.matrix ) : linProg =
   (
     (match (EltMatrix.get_row matx 1) with
     | (_, array) -> array),
-    (removeTopRow (matx (empty (n-1) p) 2)
+    (let (n,p) = (EltMatrix.get_dimensions matx) in
+             removeTopRow matx (EltMatrix.empty (n-1) p) 2)
   )
 
 (* prep : LinearProgram -> Cinput*)
@@ -39,7 +39,7 @@ let prep (prog : linProg) =
 let solve_simplex (lp : linProg) : float vector =
   let (a, b) = lp in
   let neg_one = Elts.subtract Elts.zero Elts.one in
-  let obj_lst = neg_one::a in
+  let obj_lst = neg_one::(Array.to_list a) in
   let cons_lsts = List.map (fun x -> Elts.zero::x) b in
 
   (try
