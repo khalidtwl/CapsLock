@@ -1,6 +1,5 @@
 (* This is where all the code for branch and bound livves.  The goal
    is solve an integer program by calling simplex *)
-open Main
 open GeoSearch
 open Elts
 open MatrixI
