@@ -94,6 +94,16 @@ struct
     in
     stringing p "(" 
 
+  (* Converts a point to list format *)
+  let point_to_list (p: point) : float list =
+    let rec listing (p1: point) : float list =
+      match p1 with
+      | Empty -> []
+      | Point (e,p2) -> 
+          (float_of_string (Elts.to_string e))::(listing p2)
+    in
+    listing p
+
   (* Prints a Simplex point *)
   let print_point (p: point) : unit =
     print_string (point_to_string p)
@@ -620,6 +630,7 @@ struct
   (* Tries to load a solvable system from a file *)
   let load_file (file: string) : system option =
     let m = load_data file in
+    Matrix.EltMatrix.print m;
     initialize_simplex m
 
   (* Load a system given a matrix. Returns none if the system is
