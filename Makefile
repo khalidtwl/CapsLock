@@ -16,7 +16,9 @@ CAMLFLAGS = -g
 
 # Source and Object files
 SOURCES = \
-	main.ml GeoSearch.ml
+	Order.ml EltsI.ml Elts.ml \
+	Helpers.ml MatrixI.ml Matrix.ml \
+	SimplexI.ml main.ml GeoSearch.ml
 
 OBJECTS = $(SOURCES:.ml=.cmo)
 
