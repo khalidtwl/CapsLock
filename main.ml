@@ -1,8 +1,8 @@
 open Elts
 open MatrixI
 open SimplexI
-(*open Core.Std*)
 open Matrix
+open BranchandBound
 
 type 'a vector = 'a array
 type linProg = (EltMatrix.elt vector) * EltMatrix.matrix
@@ -78,7 +78,7 @@ let print_solution (e,p) : unit =
   let _ = Simplex.print_point p in
   print_string "\n\n"
 
-(* simplex : Cinput -> float vector*)
+
 let solve_simplex (lp : linProg) : float vector option=
   let (a, b) = lp in
   let neg_one = Elts.subtract Elts.zero Elts.one in
@@ -106,16 +106,14 @@ let solve_simplex (lp : linProg) : float vector option=
       | Some solution -> print_solution solution;
         (let (e,p) = solution in
           Some (Array.of_list (Simplex.point_to_list p)))
-(*
-(* unprep : Coutput -> float vector*)
-let unprep : float vector =
-()
 
-(* branch_and_bound : float vector -> LinearProgram*)
-let branch_and_bound (vec : float vector) : linProg =
-()
-
-(* geo_search : float vector -> LinearProgram -> int vector*)
-let geo_search (vec : float vector) (prog : linProg) : int vector =
-()
-*)
+(* Master function that takes a matrix and solves it with our algorithm *)
+let solve (mat: EltMatrix.matrix): unit=
+  let lp = io mat in
+  let first_approx = solve_simplex lp in
+  match first_approx with
+  |None -> Printf.printf "No Solution Found"
+  |Some approx ->
+    match branch_and_bound approx lp with
+    |None -> Printf.printf "No Solution Found"
+    |Some solution -> Printf.printf "Solution found:  "; printArray (Array.map int_to_elt solution);
