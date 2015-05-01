@@ -84,7 +84,7 @@ let solve_simplex (lp : linProg) : float vector option=
   let neg_one = Elts.subtract Elts.zero Elts.one in
   let obj_lst = neg_one::(Array.to_list a) in
   (* Maybe you meant to use EltMatrix.map here instead? *)
-  let b_lst = 
+  let b_lst =
     let (_, height) = EltMatrix.get_dimensions b in
     let rec extracted n lst: 'a list list =
       if n >= height then lst
@@ -96,7 +96,7 @@ let solve_simplex (lp : linProg) : float vector option=
   let cons_lsts = List.map (fun x -> Elts.zero::x) b_lst in
 
   match Simplex.load_matrix (EltMatrix.from_list (obj_lst::cons_lsts)) with
-    | None -> (print_string 
+    | None -> (print_string
         "\nThis system has no feasable solution.\n"); None
     | Some sys ->
       let _ = print_string "\nSolving your system....\n\n" in

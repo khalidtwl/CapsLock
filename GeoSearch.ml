@@ -1,6 +1,6 @@
 (*Geometric search algorithm.  The main function
   geo_search will take a float vectorand a linear program
-  and return an int vector option if any neighbors satisfy the 
+  and return an int vector option if any neighbors satisfy the
   linear program*)
 
 open Elts
@@ -17,7 +17,7 @@ let max : int = 256;;
 
 (* Rounds a float to an int, careful to avoid floating point errors *)
 let round (f: float):int=
-    if (f -. (floor f))< 0.5 then int f else int f + 1;;
+    if (f -. (floor f))< 0.5 then int_of_float f else int_of_float f + 1;;
 
 (* Adds, and subtracts two vectors *)
 let subtract (v1: int vector) (v2: int vector): int vector =
@@ -60,11 +60,11 @@ let check (lp: linProg) (sol_raw: int vector): bool =
 (* Checks a point, if not a solution, adds its neighbors to frontier, a sorted list of ones to visit. *)
 (* Recursively searches frontier *)
 let rec search (lp: linProg)(point: float vector)(test_point: int vector)
-  (visited: int vector list)(frontier: (int vector * float) list)(max: int): int vector option = 
+  (visited: int vector list)(frontier: (int vector * float) list)(max: int): int vector option =
   if max < 0 then None else
     if check lp test_point then Some test_point else
       let new_points = List.filter (fun p ->  not (List.mem p visited)) (neighbors test_point point) in
-      let new_points_dist = List.sort (fun (p1,v1) (p2,v2) -> if v1 < v2 then -1 else 1) 
+      let new_points_dist = List.sort (fun (p1,v1) (p2,v2) -> if v1 < v2 then -1 else 1)
 	(List.map (fun p -> (p, distance point p)) new_points) in
       let new_front = List.merge (fun (p1,v1) (p2,v2) -> if v1 < v2 then -1 else 1) frontier new_points_dist in
       if new_front = [] then None else
@@ -76,12 +76,12 @@ let rec search (lp: linProg)(point: float vector)(test_point: int vector)
 let geo_search (lp: linProg)(approx_sol: float vector) : int vector option =
   let start_point = Array.map round approx_sol in
   search lp approx_sol start_point [] [] 256;;
-   
+
 
 (* Tests *)(*
 let list_equality (l1: 'a list) (l2: 'a list) -> bool = true;;
-  
-  
+
+
 
 let point = [|2.2; 1.9; 1.7|] in
 let c1 =  [|2;1;1|] in
@@ -93,5 +93,3 @@ assert(list_equality (neighbors c1)[ [|3;2;2|], [|2;2;1|], [|2;1;2|] ]);
 
 
 let point = *)
-
-  
