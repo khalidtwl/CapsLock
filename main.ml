@@ -14,7 +14,7 @@ let rec removeTopRow (oldM : EltMatrix.matrix ) (newM : EltMatrix.matrix)
   let n = (match (EltMatrix.get_dimensions oldM) with
           | (rows, _) -> rows) in
   (if counter <= n then (
-    EltMatrix.set_row newM counter
+    EltMatrix.set_row newM (counter-1)
     (match (EltMatrix.get_row oldM counter) with
       | (_, a) -> a );
     removeTopRow oldM newM (counter+1) )
@@ -31,8 +31,40 @@ let rec io ( matx : EltMatrix.matrix ) : linProg =
              removeTopRow matx (EltMatrix.empty (n-1) p) 2)
   )
 
-let a = EltMatrix.empty 3 3
+let rec printArray (arr : 'a array) : unit =
+  Array.iter (fun x -> (Elts.print x)) arr
+
+(*let file ="matrix0.txt"
+let lines = ref [] in
+let ic = open_in file in
+try
+  while true; do
+    lines := input_line ic :: !lines
+  done; []
+with End_of_file ->
+  close_in ic;
+  List.rev !lines
+  try
+      let line = input_line ic; input_line ic in  (* read line from in_channel and discard \n *)
+      print_endline line;          (* write the result to stdout *)
+      flush stdout;                (* write on the underlying device now *)
+      close_in ic                  (* close the input channel *)
+
+    with e ->                      (* some unexpected exception occurs *)
+      close_in_noerr ic;           (* emergency closing *)
+      raise e*)
+
+
+(*let a = EltMatrix.empty 3 3
+let () = Printf.printf "Input:\n"
 let () = EltMatrix.print a
+let () = Printf.printf "\nNow lets see what IO outputs\n\n"
+let () = match (io a) with
+        | (vect, mat) -> printArray vect; EltMatrix.print mat
+let dumbArray = Array.make 3 4
+let b = EltMatrix.from_string "0,1,2|\n3,4,5"
+let () = match (io b) with
+        | (vect, mat) -> printArray vect; EltMatrix.print mat*)
 
 (*
 (* prep : LinearProgram -> Cinput*)
