@@ -5,7 +5,7 @@ open SimplexI
 open Matrix
 
 type 'a vector = 'a array
-type linProg = EltMatrix.elt vector * EltMatrix.matrix
+type linProg = (EltMatrix.elt vector) * EltMatrix.matrix
 
 (* Returns a matrix without the top row.
   Ex: removeTopRow m (empty (n-1) p) 2 *)

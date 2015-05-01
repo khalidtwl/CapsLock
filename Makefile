@@ -18,7 +18,7 @@ CAMLFLAGS = -g
 SOURCES = \
 	Order.ml EltsI.ml Elts.ml \
 	Helpers.ml MatrixI.ml Matrix.ml \
-	SimplexI.ml main.ml GeoSearch.ml
+	SimplexI.ml GeoSearch.ml main.ml
 
 OBJECTS = $(SOURCES:.ml=.cmo)
 
