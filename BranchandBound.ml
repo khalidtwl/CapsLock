@@ -26,21 +26,21 @@ let int_to_elt (i: int): EltMatrix.elt =
   Elts.from_string (Num.string_of_num (Num.num_of_int i))
 
 (*fixes a variable to a value in a linear program *)
-(*CHECK ROW COLUMN VS COLUMN ROW*)
 let fix (index: int) (value: int) (lp: linProg): linProg =
   let (obj_funct, constraint_matrix) = lp in
   let new_obj_funct = fix_vect index obj_funct in
   let (rows, cols) = EltMatrix.get_dimensions constraint_matrix in
-  let new_lp = EltMatrix.empty rows cols in
+  let new_lp = EltMatrix.empty rows (cols-1) in
   let _ = EltMatrix.iteri
     (fun row col e -> if col < index
       then EltMatrix.set_elt new_lp (row,col) e
-      else if col < cols
-      then EltMatrix.set_elt new_lp (row, col-1) e
+      else if col = index then ()
+      else if col < cols then
+	EltMatrix.set_elt new_lp (row, col-1) e
       else EltMatrix.set_elt new_lp (row, col)
-      (Elts.subtract e (Elts.multiply (EltMatrix.get_elt constraint_matrix
-        (row, index)) (int_to_elt value))))
-      constraint_matrix;
+	(Elts.subtract e (Elts.multiply (EltMatrix.get_elt constraint_matrix
+					   (row, index)) (int_to_elt value))))
+    constraint_matrix;
  in (new_obj_funct, new_lp);;
 
 

@@ -3,6 +3,7 @@ open MatrixI
 open SimplexI
 open Matrix
 open BranchandBound
+open GeoSearch
 
 type 'a vector = 'a array
 type linProg = (EltMatrix.elt vector) * EltMatrix.matrix
@@ -70,17 +71,19 @@ let solve_simplex (lp : linProg) : float vector option =
       | Some solution -> print_solution solution;
         (let (e,p) = solution in
           Some (Array.of_list (Simplex.point_to_list p)))
+	  
 
 (* Master function that takes a matrix and solves it with our algorithm *)
 let solve (mat: EltMatrix.matrix): unit =
+
   let lp = io mat in
-  let first_approx = solve_simplex lp in
-  match first_approx with
-  |None -> Printf.printf "No Solution Found"
-  |Some approx ->
-    match branch_and_bound approx lp with
+   let first_approx = solve_simplex lp in
+    match first_approx with
     |None -> Printf.printf "No Solution Found"
-    |Some solution -> Printf.printf "Solution found:  "; printArray (Array.map int_to_elt solution)
+    |Some approx ->
+      match branch_and_bound approx lp with
+      |None -> Printf.printf "No Solution Found"
+      |Some solution -> Printf.printf "Solution found:  "; printArray (Array.map int_to_elt solution)
 
 let sampleMatrix = EltMatrix.from_string "5,4,3,0|2,3,1,5|4,1,2,11|3,4,2,8"
 let sample2 = EltMatrix.from_string "5,4,3,0|2,3,1,5|-2,-3,-1,-6|3,4,2,8"

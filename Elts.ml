@@ -33,6 +33,8 @@ struct
   let to_string = string_of_float
 
   let from_string (x: string) = 
+    Printf.printf "HERE IS THE STRING:";
+    Printf.printf "%s" x;
     try
       float_of_string x
     with

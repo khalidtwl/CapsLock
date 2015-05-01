@@ -102,7 +102,7 @@ struct
     let rec listing (p1: point) : 'a list =
       match p1 with
       | Empty -> []
-      | Point (e,p2) -> 
+      | Point (e,p2) ->
           (float_of_string (Elts.to_string e))::(listing p2)
     in
     listing p

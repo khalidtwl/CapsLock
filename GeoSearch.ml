@@ -74,6 +74,7 @@ let rec search (lp: linProg)(point: float vector)(test_point: int vector)
 (* Call this function, it performs geometric search *)
 (* TODO make max a variable *)
 let geo_search (lp: linProg)(approx_sol: float vector) : int vector option =
+
   let start_point = Array.map round approx_sol in
   search lp approx_sol start_point [] [] 256;;
 
