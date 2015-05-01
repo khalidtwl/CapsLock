@@ -1,72 +1,68 @@
 (*Geometric search algorithm.  The main function
   geo_search will take a float vectorand a linear program
-  and return an int vector option if any neighbors satisfy the
+  and return an int vector option if any neighbors satisfy the 
   linear program*)
 
-(*I didn't have access to your vecotr type, so I built my own, should be easy to swap it later*)
-type 'a vector = 'a list;;
+open main
 
-let fun get_nth (n: int)->(v: 'a vector): 'a =
-  nth v n;;
+let MAX = 256;;
+
+(* Rounds a float to an int, careful to avoid floating point errors *)
+let round (f: float):int
+    if (f -. (floor f))< .5 then int_of_float f else int_of_float f + 1;;
+
+(* Adds, and subtracts two vectors *)
+let subtract (v1: int vector) -> (v2: int vector): int vector =
+  Array.mapi (fun x i -> x - (Array.get v2 1)) v1;;
+
+let add (v1: int vector) -> (v2: int vector): int vector =
+  Array.mapi (fun x i -> x + (Array.get v2 1)) v1;;
+
+(* Gets a list of neighbors by shifting to unit cube, where neighbors can be found with XOR *)
+let neighbors (v: int vector) (interior: float vector): int vector list =
+  let int_part = Array.map int_of_float interior in
+  let new_v = subtract v int_part in
+  let neighs = Array.create (Array.length new_v) new_v in
+  Array.iteri (fun i pt -> Array.set pt i (lxor 1 (Array.get pt i))) neighs;
+  let list_neighs = Array.to_list neighs in
+  List.map (add int_part) unshifted_neighs;;
+
+(* Distance function for distance between corner and interior point *)
+let distance (p1: float vector) -> (p2: int vector) : float =
+  sqrt (Array.fold_left ( + ) 0 (Array.mapi (fun x i -> (x -. (float_of_int (Array.get p2 i)))**2) p1));;
+
+(* This function checks if an int vector is a solution to a linear program *)
+(* TODO should it be int or float? Damn Ocaml for making this an issue *)
+let check (lp: linProg)->(sol: int vector): bool =
+  let (_, constraint_matrix) = lp in
+  let ((vars,cons),mat) = constraint_matrix in
+  if  (vars-1) <> Array.length sol then false else
+    let val_at_cons = Array.init cons (fun i ->
+      Array.fold ( + ) 0 
+	(Array.init (vars-1) (fun j -> 
+	  (Array.get (Array.get mat j) i)*(Array.get sol j)))) in
+    let constraint_limits = Array.get mat (vars-1) in
+    let satisfies = Array.mapi (fun i x -> x < Array.get constraint_limits i) val_at_cons in
+    Array.fold_left (fun b1 b2 -> (b1 and b2)) true satisfies;;
+
+(* Searchs the points for the first solution *)
+(* Checks a point, if not a solution, adds its neighbors to frontier, a sorted list of ones to visit. *)
+(* Recursively searches frontier *)
+let rec search (lp: linProg)->(point: float vector)->(test_point: int vector)-> 
+  (visited: int vector list)-> (frontier: (int vector * float) list)->(max: int): int vector option = 
+  if max < 0 then None else
+    if check lp test_point then Some test_point else
+      let new_points = List.filter (fun p -> !(List.mem visited p)) (neighbors test_point point) in
+      let new_points_dist = List.sort (fun (p1,v1) (p2,v2) -> if v1 < v2 then -1 else 1) (List.map (fun p -> (p, distance point p))) in
+      let new_front = List.merge (fun (p1,v1) (p2,v2) -> if v1 < v2 then -1 else 1) frontier news_dist in
+      if new_front = [] then None else
+	search lp point (List.hd new_front) (test_point::visited) (List.tl new_front) (max-1);;
+
+(* Call this function, it performs geometric search *)
+let geo_search (lp: linProg)->(approx_sol: float vector) : int vector option =
+  let start_point = Array.map round approx_sol in
+  search lp approx_sol start_point [] [] MAX;;
+   
 
 
-let fun project (dim: int)-> (v: 'a vector): 'a vector =
-  match v with
-  |[] -> assert(false)
-  |hd::tl -> if dim = 0 then tl else hd::(project (dim-1) tl);;
-
-let fun reverse_project (dim: int) -> (value: 'a) -> (v: 'a vector): 'a vector=
-` if dim = 0 then value::v else if d = [] then assert false else let (hd::tl)=v in hd::(reverse_project (dim-1) value tl);;
-
-let rec order_pair (v: 'a vector): 'a*int vector =
-  match v with
-  |[] -> []
-  |x::[] -> [(x,0)]
-  |hd::tl -> let ((y,n)::tl2) = (order_pair tl) in (hd,n+1)::(y,n)::tl2;;
-
-let near_int (f: float): int =
-  if  (abs (f -. (ceil f)))< (abs (f-.(floor f))) then (int (ceil f)) else (int (floor f));;
-
-let far_int (f: float): int =
-  if  (abs (f -. (ceil f)))>= (abs (f-.(floor f))) then (int (ceil f)) else (int (floor f));;
-
-let nearness (f: float): float = min (abs (f -. (ceil f))) (abs (f -. (floor f)));;
-(*sorts tuples based on which dimessnion corresponds to closeness to an edge*)
-let pair_sort (p1:float*int)->(p2:float*int): int =
-  let ((f1,_),(f2,_))= (p1,p2) in
-  let (r1,r2) = (nearness f1, nearness f2)in
-  if r2 >= r1 then -1 else 1;;
-(*  gets the points nearest to a list in order FLAWED*)
-let rec nearest_list (v: float*int vector) -> (max_len: int) : int vector list=
-  let (num, place) = List.hd v in
-  let proj_nearest = nearest_list (project 0 v) max_len in
-  List.append (reverse_project 0 (near_int num, place) proj_nearest) (reverse_project 0 (far_int num, place) proj_nearest)
-
-(*Given an int list and another list, performs the operations on the other list that would sort the int list, want fast as possibble time in length of the other list*)
-(*NOT WRITTEN*)
-let depermute (perm: int list)-> (permed: 'a list): 'a list=
-  permed;;
-
-(*Given a vector produces a list of corners ordered by nearness, DOES NOT YET WORK*)
-let get_list (v: float vector): float*int vector =
-  let ord_v = order_pair v in
-  let  permuted_points_list =  nearest_list (List.sort pair_sort ord_v) in
-  let perm = (List.map ~f:(fun (x,y) -> y) (List.hd permuted_points_list))in
-  let ordered_points_list = (List.map ~f:(depermute perm) permuted_points_list) in
-  let points_list = List.map ~f:(List.map ~f:(fun (x,y) ->  x)) ordered_points_list in
-  points_list;;
-
-(*NOT A REAL FUNCTION, just used so I can get this to type check*)
-let check (lp: LinearProgram)->(sol: int vector): bool =
-  true;;
-
-(*searchs a list of points for the first solution*)
-let rec search (sols: int vector list) -> (lp: LinearProgram) : int vector option =
-  match sols with
-  |[] -> None
-  |x::xs -> if check lp x then Some x else search xs lp;;
-
-(*Call this function, it performs geometric search*)
-let geo_search (lp: LinearProgram)->(approx_sol: float vector) : int vector option =
-  let corners = get_points approx_sol in
-  search corners lp ;;
+  
