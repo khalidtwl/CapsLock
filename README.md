@@ -24,4 +24,4 @@ What to do with Vector
 Someone to do geometric search
 
 TO RUN
-Type make with the directory open to compile the code. Then run the program by typing in ./simplex
+Type make with the directory open to compile the code. Then run the program by typing in ./simplex. There might be an error demanding a test/simplex/results.txt file if so just create a test folder and inside of it create a simplex folder and inside of that create a "results.txt" file.

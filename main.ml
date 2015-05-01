@@ -84,11 +84,13 @@ let solve (mat: EltMatrix.matrix): unit =
 
 let sampleMatrix = EltMatrix.from_string "5,4,3,0|2,3,1,5|4,1,2,11|3,4,2,8"
 let sample2 = EltMatrix.from_string "5,4,3,0|2,3,1,5|-2,-3,-1,-6|3,4,2,8"
+let sample3 = EltMatrix.from_string "1,1,0|1,2,4|2,1,4"
 
-let () = match (io sample2) with
+
+let () = match (io sample3) with
           | (vect, mat) -> printArray vect; EltMatrix.print mat
 
-let () = solve sample2
+let () = solve sample3
 
 (*let lp = io sample2
 let _ = solve_simplex lp*)
