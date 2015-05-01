@@ -2,7 +2,7 @@ open Core.Std
 open Matrix
 
 type 'a vector = 'a array
-type linProg = 'a vector * matrix
+type linProg = 'a vector * EltMatrix.matrix
 
 (* First parameter is our input, second is the current matrix.
   To use this function, pass in an empty matrix as the second argument *)
