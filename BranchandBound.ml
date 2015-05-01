@@ -4,7 +4,7 @@ open main
 open GeoSearch
 
 
-
+(* Gives a list of fixes for a vector, sorted by which is the smallest shift. *)
 let branch_direction_priority_list (approx: float vector): (int*int) list =
   let coordinated = Array.mapi (fun i fl -> (i,fl)) approx in
   let unsorted = Array.fold_left (fun lst (i,fl) -> (i, int fl)::(i,int fl +1)::lst) [] coordinated in
@@ -17,6 +17,7 @@ let fix_vect (i: int) (vect: 'a vector): 'a vector =
 let int_to_elt (i: int): EltMatrix.elt =
   Elts.from_string (Num.string_of_num (Num.num_of_int i))
 
+(*fixes a variable to a value in a linear program *)
 (*CHECK ROW COLUMN VS COLUMN ROW*)
 let fix (index: int) (value: int) (lp: linProg): linProg =
   let (obj_funct, constraint_matrix) = lp in
@@ -29,7 +30,10 @@ let fix (index: int) (value: int) (lp: linProg): linProg =
  else EltMatrix.set_elt new_lp (row, col) (Elts.subtract e (Elts.multiply (EltMatrix.get_elt constraint_matrix (row, index)) (int_to_elt value)));
  in new_lp;;
 
-let rec branch_and_bound (approx_sol: float vector) (lp: linProg) (fixes_list: (int*int) list): int vector option =
+
+(* This function takes a solution, a LP and a list of fixes, tuples that say fix variable i to v*)
+(* It checks a geo_search then implements branch and bound in order of priority*)
+let rec branch_and_bound_call (approx_sol: float vector) (lp: linProg) (fixes_list: (int*int) list): int vector option =
   match geo_search lp approx_sol with
   |Some sol -> Some sol
   |None -> match fixes_list with
@@ -40,4 +44,6 @@ let rec branch_and_bound (approx_sol: float vector) (lp: linProg) (fixes_list: (
 	|Some sol -> sol
 	|None -> None;;
 			 
-    
+(* call this function to run a branch  and bound *)    
+let branch_and_bound (approx_sol: float vector) (lp: linProg): int vector option =
+  branch_and_bound_call approx_sol lp (branch_direction_priority_list approx_sol)
